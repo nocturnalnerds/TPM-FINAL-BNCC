@@ -11,9 +11,8 @@ use Illuminate\Support\Facades\Hash;
 class AuthApiController extends Controller{
     public function register(Request $request){
         $request->validate([
-            "group_name" => "required|string|max:255",
+            "name" => "required|string|max:255",
             "password" => "required|string|max:255",
-            "leader_name" => "required|string|max:255",
             "email" => "required|string|max:255",
             "whatsapp_number" => "required|string|max:255",
             "line_id" => "required|string|max:255",
@@ -26,12 +25,6 @@ class AuthApiController extends Controller{
         if (User::where('email', $request->email)->exists()) {
             return response()->json([
             'message' => 'Email already exists',
-            ], 400);
-        }
-
-        if (User::where('group_name', $request->group_name)->exists()) {
-            return response()->json([
-            'message' => 'Group name already exists',
             ], 400);
         }
 
@@ -53,9 +46,8 @@ class AuthApiController extends Controller{
         // dd($cv_fileName . $cv_final_fileName);
         try{
             User::create([
-                'group_name' => $request->group_name,
+                'name' => $request->name,
                 'password' => $request->password,
-                'leader_name' => $request->leader_name,
                 "email" => $request->email,
                 "whatsapp_number"=> $request->whatsapp_number,
                 "line_id" => $request->line_id,

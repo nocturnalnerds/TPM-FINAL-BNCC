@@ -3,75 +3,73 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Team;
 use Illuminate\Http\Request;
 
 class TeamController extends Controller{
-    public function teamList(){
-        $teams = User::all();
-        $teams = User::select('id', 'name',)->get();
-        return response()->json(['success' => true, 'teams' => $teams], 200);
-    }
-    public function teamListNumPage(Request $request){
-        try{
-            $request->validate([
-                'show_num' => 'required|integer',
-                'page' => 'required|integer',
-            ]);
-        }catch(\Exception $e){
-            dd($e);
-            return response()->json(["message" => "Invalid input"],500);
+    public function createTeam(Request $request){
+        $request->validate([
+            'team_name' => 'required|max:255',
+        ]);
+        $code = substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 6);
+        while (Team::where('code', $code)->exists()) {
+            $code = substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 6);
         }
         
-        $perPage = $request->show_num;
-        $page = $request->page;
-        $teams = User::select('id', 'name')
+        try{
+            $team = Team::create([
+                'team_name' => $request->team_name,
+                'random_key' => $code,
+            ]);
+            return response()->json(["message" => "Team \'$team->team_name\' Successfully Created"],200);
+        }catch (\Exception $e){
+            dd($e);
+            return response()->json(["message" => "Create Team Failed"], 500);
+        }
+            
+    }
+    public function teamList(){
+        $teams = Team::all();
+        $teams = Team::select('teamId', 'team_name',)->get();
+        return response()->json(['success' => true, 'teams' => $teams], 200);
+    }
+    public function teamListNumPage($num,$page){
+        $perPage = $num;
+        $totalTeams = Team::count();
+        if ($page < 1 || $num < 1 || ($page - 1) * $perPage >= $totalTeams) {
+            return response()->json(['success' => false, 'message' => 'Invalid page number or number of items per page'], 400);
+        }
+        $teams = Team::select('teamId', 'team_name')
                 ->skip(($page - 1) * $perPage)
                 ->take($perPage)
                 ->get();
         return response()->json(['success' => true, 'teams' => $teams], 200);
     }
-    public function showTeamSorted(Request $request){
-        try{
-            $request->validate([
-                'stat' => 'required|boolean',
-            ]);
-        }catch(\Exception $e){
-            dd($e);
-            return response()->json(['message'=> 'Invalid Input'],500);
-        }
-        $order = $request->stat ? 'asc' : 'desc';
-        $teams = User::select('id', 'name')
+    public function showTeamSortbyName($stat){
+        
+        $order = $stat ? 'asc' : 'desc';
+        $teams = Team::select('teamId', 'team_name')
                     ->orderBy('name', $order)
                     ->get();
         return response()->json(['success' => true, 'teams' => $teams], 200);
     }
-    public function searchByName(Request $request){
-        try{
-            $request->validate([
-                'name' => 'required|string',
-            ]);
-        }catch(\Exception $e){
-            dd($e);
-            return response()->json(['message'=> 'Invalid Input'],500);
-        }
-        $name = $request->name;
-        $teams = User::select('id', 'name')
-                    ->where('name', 'like', $name . '%')
+    public function showTeamSortbyTime($stat){
+        $order = $stat ? 'asc' : 'desc';
+        $teams = Team::select('teamId', 'team_name')
+                    ->orderBy('created_at', $order)
                     ->get();
         return response()->json(['success' => true, 'teams' => $teams], 200);
     }
-    public function editTeam(Request $request){
-        try{
-            $request->validate([
-                'id' => 'required|integer|exists:users,id',
-                'name' => 'required|string',
-            ]);
-        }
-        $team = User::find($request->id);
-        $team->name = $request->name;
-        $team->save();
-
+    public function searchByName($name){
+        
+        $teams = Team::select('teamId', 'team_name')
+                    ->where('team_name', 'like', $name . '%')
+                    ->get();
+        return response()->json(['success' => true, 'teams' => $teams], 200);
+    }
+    public function editTeam($id){
+        $team = Team::find($id)->first();
         return response()->json(['success' => true, 'team' => $team], 200);
     }
+    
 }

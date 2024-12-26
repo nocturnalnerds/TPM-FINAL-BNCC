@@ -12,10 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('group_name')->unique();
+            $table->id('userId');
+            $table->string('name');
             $table->string('password');
-            $table->string('leader_name');
             $table->string('email')->unique();
             $table->string('whatsapp_number');
             $table->string('line_id');
@@ -23,7 +22,8 @@ return new class extends Migration
             $table->string('birthplace');
             $table->date('birthdate');
             $table->string('cv_path');
-            $table->string('flazz_or_id_card_path')->nullable();
+            $table->string('flazz_or_id_card_path');
+            $table->boolean('status');
             $table->timestamps();
         });
 
