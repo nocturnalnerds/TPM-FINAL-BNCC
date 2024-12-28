@@ -68,8 +68,43 @@ class TeamController extends Controller{
         return response()->json(['success' => true, 'teams' => $teams], 200);
     }
     public function editTeam($id){
-        $team = Team::find($id)->first();
+        $team = Team::find($id);
+        if (!$team) {
+            return response()->json(['success' => false, 'message' => 'Team not found'], 404);
+        }
         return response()->json(['success' => true, 'team' => $team], 200);
     }
-    
+
+    public function updateTeam(Request $request, $id){
+        $team = Team::find($id);
+        if (!$team) {
+            return response()->json(['success' => false, 'message' => 'Team not found'], 404);
+        }
+
+        $request->validate([
+            'team_name' => 'required|max:255',
+        ]);
+
+        try {
+            $team->update([
+                'team_name' => $request->team_name,
+            ]);
+            return response()->json(['success' => true, 'message' => 'Team updated successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Update Team Failed'], 500);
+        }
+    }
+    public function deleteTeam($id){
+        $team = Team::find($id);
+        if (!$team) {
+            return response()->json(['success' => false, 'message' => 'Team not found'], 404);
+        }
+
+        try {
+            $team->delete();
+            return response()->json(['success' => true, 'message' => 'Team deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Delete Team Failed'], 500);
+        }
+    }
 }

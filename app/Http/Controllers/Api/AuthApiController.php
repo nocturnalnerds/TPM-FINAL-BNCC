@@ -88,8 +88,25 @@ class AuthApiController extends Controller{
                 'token_type' => 'Bearer',
                 'message' => 'Login successful'
             ], 200);
-            
+    }
+    public function adminLogin(Request $request){
+        $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+        ]);
 
-        
+        if (!Auth::guard('admin')->attempt($request->only('email', 'password'))) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
+        }
+
+        $admin = Auth::guard('admin')->user();
+        $tokenResult = $admin->createToken('authToken');
+        $token = $tokenResult->accessToken;
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'message' => 'Admin login successful',
+        ], 200);
     }
 }

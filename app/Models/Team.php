@@ -10,4 +10,7 @@ class Team extends Model
         'team_name', 
         'random_key'
     ];
+    public function users(){
+        return $this->belongsToMany(User::class, 'user_team', 'team_id', 'user_id');
+    }
 }
