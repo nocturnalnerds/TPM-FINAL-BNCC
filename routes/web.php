@@ -20,7 +20,7 @@ Route::post('/register', [AuthApiController::class, 'register']);
 Route::get('/user/{id}', [UserController::class, 'getUserById']);
 Route::get('/team/{teamId}/users', [UserController::class, 'getUsersByTeamId']);
 
-Route::post('/teams', [TeamController::class,'createTeam']);
+Route::post('/teams', [TeamController::class,'createTeam'])->name('createTeams');
 Route::get('/teams', [TeamController::class,'teamList'])->name('teamList')->middleware('isAdmin');
 Route::get('/teams/name/{stat}',[TeamController::class,'showTeamSortbyName'])->name('sortByName')->middleware('isAdmin');;
 Route::get('/teams/time/{stat}',[TeamController::class,'showTeamSortbyTime'])->name('sortByTime')->middleware('isAdmin');;
@@ -33,6 +33,8 @@ Route::delete('/teams/{teamId}', [TeamController::class,'deleteTeam'])->name('de
 
 Route::get('/', [ViewController::class, 'viewHome'])->name('viewHome');
 Route::get('/login', [ViewController::class, 'viewLogin'])->name('loginView');
-Route::get('/dashboard', [ViewController::class, 'viewUserDashboard'])->name('dashboardView');
+Route::get('/register', [ViewController::class, 'viewRegister'])->name('registerView');
+Route::get('/dashboard', [ViewController::class, 'viewUserDashboard'])->name('dashboardView')->middleware('isLogin');
 Route::get('/admin', [ViewController::class,"viewAdminLogin"])->name('viewAdminLogin');
 Route::get('/admin/dashboard', [TeamController::class,"teamList"])->name('adminDashboardView')->middleware('isAdmin');
+Route::get('/teams/{teamId}/register', [TeamController::class, 'registJunction'])->name('registerJunction');

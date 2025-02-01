@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Login</title>
+    <title>Team Register</title>
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
@@ -21,7 +21,7 @@
 
     body {
         min-height: 100vh;
-        background-image: url(bg2.png);
+        background-image: url(background.png);
         background-size: contain;
         overflow: hidden;
     }
@@ -109,10 +109,10 @@
         background-color: greenyellow;
     }
 
-    #buttWrap {
+    #buttonwrap {
         display: flex;
         flex-direction: row;
-        gap: 10px;
+        gap: 100px;
     }
 
     #accwrap {
@@ -136,25 +136,46 @@
 
 <body>
     <div class="wrapper">
-        <h1>Login Page</h1>
-        <form action="{{ route('login') }}" method="POST">
+        <h1>Register - Group Information</h1>
+        <form action="{{ route('createTeams') }}" method="POST">
             @csrf
             <div>
-                <label>Nama Group</label>
-                <input required type="text" name="team_name" id="groupInput" placeholder="Team Name">
+                <label for="team_name">Group Name</label>
+                <input required type="text" name="team_name" id="groupInput" placeholder="Type Here">
             </div>
             <div>
-                <label>Password</label>
+                <label for="password">Password</label>
                 <input required type="password" name="password" id="passInput" placeholder="Password">
             </div>
-            <div id="buttWrap">
-                <button type="submit" id="sign">Sign In</button>
-                <a href="{{route('registerView')}}">Register</a>
+            <div>
+                <label for="password_confirmation">Confirm Password</label>
+                <input required type="password" name="password_confirmation" id="ConfirmPass"
+                    placeholder="Confirm Password">
+            </div>
+            <script>
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const password = document.getElementById('passInput').value;
+                const confirmPassword = document.getElementById('ConfirmPass').value;
+                if (password !== confirmPassword) {
+                    e.preventDefault();
+                    alert('Passwords do not match.');
+                }
+            });
+            </script>
+            <label>Is your team from BINUS?</label>
+            <div id="buttonwrap">
+                <button type="submit" id="no">No</button>
+                <button type="submit" id="yes">Yes</button>
+            </div>
+            <div id="accwrap">
+                <a href="{{route('login')}}">Already have an account?</a>
+                <!-- <a href="{{ route('login') }}"><button id="next">Next ></button></a> -->
+                <button id="next" type="submit">Next </button>
             </div>
         </form>
-    </div>
 
+    </div>
 </body>
 
 
-</html
+</html>

@@ -14,6 +14,9 @@ class ViewController extends Controller
     public function viewLogin(){
         return view('auth.login');
     }
+    public function viewRegister(){
+        return view('auth.registerTeam');
+    }
     public function viewUserDashboard($teamId){
         $teamInfo = Team::where('teamId', $teamId)->first();
         return view('user.userDashboard', compact('teamInfo'));

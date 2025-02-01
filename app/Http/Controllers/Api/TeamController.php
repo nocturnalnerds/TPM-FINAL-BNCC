@@ -26,9 +26,8 @@ class TeamController extends Controller{
                 'password' => Hash::make($request->password),
             ]);
             
-            return redirect()->route('dashboardView', ['teamId' => $team->id])->with('success', 'Register successful!');            
+            return view('auth.userInfoRegister')->with(['success' => 'Register successful!', 'teamId' => $team->teamId]);            
         }catch (\Exception $e){
-            dd($e);
             return back()->withErrors('error', 'error occured, create team failed!');
         }
             

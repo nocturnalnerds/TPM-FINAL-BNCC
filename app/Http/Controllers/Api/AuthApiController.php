@@ -13,10 +13,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthApiController extends Controller{
+    public function registJunction(Request $request, $teamId){
+        dd("MASUKK!");
+        return redirect()->route('auth.additionalInfo')->with([
+            'success' => 'Redirected successfully!',
+            'oldReq' => $request,
+            'teamId' => $teamId
+        ]);
+    }
     public function register(Request $request){
         $request->validate([
             "name" => "required|string|max:255",
-            "password" => "required|string|max:255",
             "email" => "required|string|max:255",
             "whatsapp_number" => "required|string|max:255",
             "line_id" => "required|string|max:255",
@@ -52,7 +59,6 @@ class AuthApiController extends Controller{
         try{
             $user = User::create([
                 'name' => $request->name,
-                'password' => Hash::make($request->password),
                 "email" => $request->email,
                 "role" => $request->role,
             ]);
@@ -92,13 +98,20 @@ class AuthApiController extends Controller{
         
         $request->session()->regenerate();
         $filteredTeam = $team->only(['teamId', 'team_name']);
-        $userTeam = userTeam::where('team_id', $team->teamId)        ->first();
-        $userData = usersData::where('userId', $userTeam->user_id)->first();
-        return view('user.userDashboard')->with(['team' => $filteredTeam, 'userData' => $userData]);
+        try{
+            $userTeam = userTeam::where('team_id', $team->teamId)->first();
+            dd($userTeam);
+            $userData = usersData::where('userId', $userTeam->user_id)->first();
+            return view('user.userDashboard')->with(['team' => $filteredTeam, 'userData' => $userData]);    
+        }catch(e){
+            return back()->with('error' , e);
+        }
+        
         
         
     }
     public function adminLogin(Request $request){
+        // dd(Hash::make("Hanjen1619"));
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
@@ -134,6 +147,6 @@ class AuthApiController extends Controller{
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('viewAdminLogin')->with('success', 'Logout successful!');
+        return redirect()->route('dashboardView')->with('success', 'Logout successful!');
     }
 }
