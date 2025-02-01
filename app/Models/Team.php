@@ -1,16 +1,14 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Passport\HasApiTokens;
 
-class Team extends Model
-{
-    protected $fillable = [
-        'team_name', 
-        'random_key'
-    ];
-    public function users(){
-        return $this->belongsToMany(User::class, 'user_team', 'team_id', 'user_id');
-    }
+class Team extends Authenticatable{
+    use HasApiTokens, Notifiable;
+    protected $primaryKey = 'teamId'; // Define the actual primary key
+    protected $fillable = ['team_name', 'password'];  // Ensure team_name and password are fillable
+
 }

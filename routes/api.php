@@ -1,12 +1,38 @@
 <?php
-// filepath: /Users/mac/Desktop/TPM_FINAL_BNCC_WORKSPACE/tpmFinal/routes/api.php
+
 use App\Http\Controllers\Api\AuthApiController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ViewController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', [AuthApiController::class, 'login']);
-Route::post('/admin/login', [AuthApiController::class, 'adminLogin']);
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+Route::post('/login', [AuthApiController::class, 'login'])->name('login');
+Route::post('/admin/logout', [AuthApiController::class, 'adminLogout'])->name('adminLogout');
+Route::post('/admin/login', [AuthApiController::class, 'adminLogin'])->name('adminLogin');
 Route::post('/register', [AuthApiController::class, 'register']);
+
 
 Route::get('/user/{id}', [UserController::class, 'getUserById']);
 Route::get('/team/{teamId}/users', [UserController::class, 'getUsersByTeamId']);
+
+Route::post('/teams', [TeamController::class,'createTeam']);
+Route::get('/teams', [TeamController::class,'teamList'])->name('teamList')->middleware('isAdmin');
+Route::get('/teams/name/{stat}',[TeamController::class,'showTeamSortbyName'])->name('sortByName');
+Route::get('/teams/time/{stat}',[TeamController::class,'showTeamSortbyTime'])->name('sortByTime');
+Route::get('/teams/name/{name}',[TeamController::class,'searchByName']);
+Route::get('/teams/{teamId}/edit',[TeamController::class, 'editTeam'])->name('editTeam');
+Route::put('/teams/{teamId}', [TeamController::class, 'updateTeam']);
+Route::delete('/teams/{teamId}', [TeamController::class,'deleteTeam'])->name('deleteTeam');
+
+// view controller
+
+Route::get('/', [ViewController::class, 'viewHome'])->name('viewHome');
+Route::get('/login', [ViewController::class, 'viewLogin'])->name('loginView');
+Route::get('/dashboard/{teamId}', [ViewController::class, 'viewUserDashboard'])->name('dashboardView');
+Route::get('/admin', [ViewController::class,"viewAdminLogin"])->name('viewAdminLogin');
+Route::get('/admin/dashboard', [TeamController::class,"teamList"])->name('adminDashboardView')->middleware('isAdmin');

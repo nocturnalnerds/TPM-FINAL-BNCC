@@ -5,30 +5,27 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
-
+    
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
+
+    protected $table = 'users'; // Pastikan tabel sesuai
+    protected $primaryKey = 'userId'; // Ubah primary key jadi userId
+    public $incrementing = true;
+    protected $keyType = 'int';
+    
     protected $fillable = [
         'name',
         'password',
         'email',
-        'whatsapp_number',
-        'line_id',
-        'github_gitlab_id',
-        'birthplace',
-        'birthdate',
-        'cv_path',
-        'flazz_or_id_card_path',
     ];
 
     /**

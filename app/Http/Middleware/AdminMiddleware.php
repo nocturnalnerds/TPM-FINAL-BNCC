@@ -14,12 +14,11 @@ class AdminMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
         if (Auth::guard('admin')->check()) {
-            return $next($request);
+            return $next($request); // Proceed with the request if admin is authenticated
         }
-
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return redirect()->route('viewAdminLogin')->with('error', 'You must be logged in as an admin to access this page.');
     }
 }

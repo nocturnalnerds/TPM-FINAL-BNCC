@@ -102,83 +102,27 @@ class TeamController extends Controller{
             return response()->json(['success' => false, 'message' => 'User data not found'], 404);
         }
         $userInfo = User::where('userId', $userTeam->user_id)->first();
-        $userInfo = User::select('userId', 'name', 'email')->where('userId', $userTeam->user_id)->first();
         return view('admin.editTeam')->with(['team' => $team, 'userData' => $userData, 'userInfo' => $userInfo]);
     }
 
     public function updateTeam(Request $request, $id){
-        
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'whatsapp_number' => 'nullable|string|max:20',
-            'line_id' => 'nullable|string|max:50',
-            'github_gitlab_id' => 'nullable|string|max:50',
-            'birthplace' => 'nullable|string',
-            'birthdate' => 'nullable|date',
-            'cv' => 'nullable|file|mimes:pdf',
-            'flazz_or_id' => 'nullable|file|mimes:png,jpg',
-        ]);
-        // Find the team by its ID
-        $team = Team::where('teamId', $id)->first();
-        // dd($request->all(),$team, $id);
+        $team = Team::find($id);
         if (!$team) {
             return response()->json(['success' => false, 'message' => 'Team not found'], 404);
         }
-    
-        // Find the associated userTeam and userData
-        $userTeam = userTeam::where('team_id', $team->teamId)->first();
-        $userData = usersData::where('userId', $userTeam->user_id)->first();
-        if (!$userTeam || !$userData) {
-            return response()->json(['success' => false, 'message' => 'User team or user data not found'], 404);
+
+        $request->validate([
+            'team_name' => 'required|max:255',
+        ]);
+
+        try {
+            $team->update([
+                'team_name' => $request->team_name,
+            ]);
+            return response()->json(['success' => true, 'message' => 'Team updated successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Update Team Failed'], 500);
         }
-    
-        // Update the user data
-        $userData->whatsapp_number = $request->input('whatsapp_number');
-        $userData->line_id = $request->input('line_id');
-        $userData->github_gitlab_id = $request->input('github_gitlab_id');
-        $userData->birthplace = $request->input('birthplace');
-        $userData->birthdate = $request->input('birthdate');
-    
-        // Handle file uploads if they exist
-        if ($request->hasFile('cv')) {
-            $filePath = public_path('storage/cv');
-            $file = $request->file(key: 'cv');
-            $cv_fileName = "{$team->team_name}-CV." . $file->getClientOriginalExtension();
-            $file->move($filePath, $cv_fileName);
-            $cv_final_fileName = "storage/cv/{$cv_fileName}";
-            $userData->cv_path = $cv_final_fileName;
-        }
-        
-        
-        
-        
-        
-        if ($request->hasFile('flazz')) {
-            $filePath = public_path('storage/flazz_or_id');
-            $file = $request->file(key: 'flazz_or_id');
-            $flazz_or_id_fileName = "{$request->group_name}-flazz_or_id" . $file->getClientOriginalExtension();
-            $file->move($filePath, $flazz_or_id_fileName);
-            $flazz_or_id_final_fileName = "storage/flazz_or_id/{$flazz_or_id_fileName}";
-            $userData->flazz_or_id_card_path = $flazz_or_id_final_fileName;
-        }
-    
-        // dd($userData);
-        // Save the updated user data
-        $userData->save();
-    
-        // Optionally update user info if needed (e.g. update email or name)
-        $userInfo = User::where('userId', $userTeam->user_id)->first();
-        if ($userInfo) {
-            $userInfo->name = $request->input('name', $userInfo->name);
-            $userInfo->email = $request->input('email', $userInfo->email);
-            $userInfo->save();
-        }
-        
-        
-        // Redirect back or return a success response
-        return redirect()->route('teamList')->with('success', 'Team updated successfully!');
     }
     public function deleteTeam($id){
         $team = Team::where('teamId', $id)->first();

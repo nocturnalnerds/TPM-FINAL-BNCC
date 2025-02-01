@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Admin;
+use App\Models\Team;
 use App\Models\User;
 
 return [
@@ -39,21 +40,24 @@ return [
     */
 
     'guards' => [
-        'web' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
-
-        'api' => [
-            'driver' => 'passport',
-            'provider' => 'users',
-        ],
-
-        'admin' => [
-            'driver' => 'passport',
-            'provider' => 'admins',
-        ],
+    'web' => [
+        'driver' => 'session',
+        'provider' => 'users',
     ],
+
+    'api' => [
+        'driver' => 'passport',
+        'provider' => 'teams',  // Correctly use the 'teams' provider for API authentication
+    ],
+    'admin' => [
+        'driver' => 'session',
+        'provider' => 'admins',
+    ],
+    'team' => [
+        'driver' => 'session',
+        'provider' => 'teams',
+    ],
+],
 
     /*
     |--------------------------------------------------------------------------
@@ -73,6 +77,10 @@ return [
     */
 
     'providers' => [
+        'teams' => [
+            'driver' => 'eloquent',
+            'model' => Team::class, // Use the Team model
+        ],
         'users' => [
             'driver' => 'eloquent',
             'model' => User::class,
@@ -82,6 +90,7 @@ return [
             'driver' => 'eloquent',
             'model' => Admin::class,
         ],
+        
     ],
 
     /*

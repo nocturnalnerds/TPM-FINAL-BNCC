@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
+use App\Models\Team;
 use App\Models\User;
+use App\Models\usersData;
+use App\Models\userTeam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -21,6 +25,7 @@ class AuthApiController extends Controller{
             "birthdate" => "required|string|max:255",
             "cv" => "required|mimes:pdf|max:2048",
             "flazz_or_id" => "required|mimes:png,jpeg,jpg|max:2048",
+            "team_id" => "required",
         ]);
         if (User::where('email', $request->email)->exists()) {
             return response()->json([
@@ -45,10 +50,15 @@ class AuthApiController extends Controller{
         
         // dd($cv_fileName . $cv_final_fileName);
         try{
-            User::create([
+            $user = User::create([
                 'name' => $request->name,
-                'password' => $request->password,
+                'password' => Hash::make($request->password),
                 "email" => $request->email,
+                "role" => $request->role,
+            ]);
+            
+            usersData::create([
+                "userId" => $user->id,
                 "whatsapp_number"=> $request->whatsapp_number,
                 "line_id" => $request->line_id,
                 "github_gitlab_id" => $request->github_gitlab_id,
@@ -57,9 +67,11 @@ class AuthApiController extends Controller{
                 "cv_path" => $cv_final_fileName,
                 "flazz_or_id_card_path" => $flazz_or_id_final_fileName,
             ]);
-            return response()->json([
-                'message' => 'Account Successfully Created',
-            ], 201);
+            $shit = userTeam::create([
+                'user_id' => $user->id,
+                'team_id' => $request->team_id,
+            ]);
+            return redirect()->route('login')->with('success', 'register successful!');
         }catch (\Exception $e){
             dd($e);
         }
@@ -67,46 +79,61 @@ class AuthApiController extends Controller{
     }
     public function login(Request $request){
         $request->validate([
-            'group_name' => 'required|string',
+            'team_name' => 'required|string|max:255',
             'password' => 'required|string',
         ]);
-        // dd($request);
-
-        $user = User::where('group_name', $request->group_name)->first();
-        // dd($user);
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-            'message' => 'Invalid credentials'
-            ], 401);
+    
+        
+        $team = Team::where('team_name', $request->team_name)->first();
+        if (!$team || !Hash::check($request->password, $team->password)) {
+            return response()->json(['error' => 'Invalid credentials'], 401);
         }
+        Auth::guard('team')->login($team);
+        
         $request->session()->regenerate();
-        $tokenResult = $user->createToken('authToken');
-        $token = $tokenResult->accessToken;
-            
-            return response()->json([
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-                'message' => 'Login successful'
-            ], 200);
+        $filteredTeam = $team->only(['teamId', 'team_name']);
+        $userTeam = userTeam::where('team_id', $team->teamId)        ->first();
+        $userData = usersData::where('userId', $userTeam->user_id)->first();
+        return view('user.userDashboard')->with(['team' => $filteredTeam, 'userData' => $userData]);
+        
+        
     }
     public function adminLogin(Request $request){
         $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
+            'email' => 'required|email',
+            'password' => 'required',
         ]);
+        // dd(Hash::make("Hanjen1619"));
+        $admin = Admin::where('email', $request->email)->first();
 
-        if (!Auth::guard('admin')->attempt($request->only('email', 'password'))) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+        if (!$admin || !Hash::check($request->password, $admin->password)) {
+            return response()->json(['error' => 'Invalid credentials'], 401);
         }
+        
+        Auth::guard('admin')->login($admin);
+        $request->session()->regenerate();
+        return redirect()->route('adminDashboardView')->with('success', 'Login successful!');
+    }
+    public function adminLogout(Request $request){
+        $user = Auth::guard('admin')->user();
 
-        $admin = Auth::guard('admin')->user();
-        $tokenResult = $admin->createToken('authToken');
-        $token = $tokenResult->accessToken;
+        if (!$user) {
+            return response()->json(['message' => 'No user logged in'], 400);
+        }
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'message' => 'Admin login successful',
-        ], 200);
+        return redirect()->route('viewAdminLogin')->with('success', 'Logout successful!');
+    }
+    public function teamLogout(Request $request){
+        $user = Auth::guard('team')->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'No user logged in'], 400);
+        }
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('viewAdminLogin')->with('success', 'Logout successful!');
     }
 }

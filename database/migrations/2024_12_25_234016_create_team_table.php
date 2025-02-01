@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('team', function (Blueprint $table) {
+        Schema::create('teams', function (Blueprint $table) {
             $table->id('teamId');
             $table->string('team_name')->unique();
-            $table->string('random_key')->unique();
+            $table->string('password');
             $table->timestamps();
         });
     }
